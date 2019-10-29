@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>XmlCheck.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">XmlPar</a> &gt; <a href="index.source.html" class="el_package">default</a> &gt; <span class="el_source">XmlCheck.java</span></div><h1>XmlCheck.java</h1><pre class="source lang-java linenums">import org.apache.log4j.Logger;
+
+import javax.xml.XMLConstants;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.SchemaFactory;
+import java.io.File;
+import java.io.FileNotFoundException;
+
+public class XmlCheck {
+<span class="fc" id="L14">    private static final Logger LOGGER = Logger.getLogger(XmlCheck.class);</span>
+    private ArgsParser argsParser;
+    private Source xslt;
+<span class="fc" id="L17">    private Source xml = null;</span>
+    private Transformer transformer;
+
+    /**
+     * Getting parser;
+     *
+     * @param argsParser Parsing parametres from console
+     */
+<span class="fc" id="L25">    public XmlCheck(ArgsParser argsParser) {</span>
+<span class="fc" id="L26">        this.argsParser = argsParser;</span>
+<span class="fc" id="L27">    }</span>
+
+    public static void main(String[] args) {
+<span class="nc" id="L30">        XmlCheck xmlCheck = new XmlCheck(new ArgsParser(args));</span>
+<span class="nc bnc" id="L31" title="All 2 branches missed.">        if (xmlCheck.documentExistCheck()) {</span>
+<span class="nc" id="L32">            xmlCheck.xsltTransformAndValidate();</span>
+        }
+
+<span class="nc" id="L35">    }</span>
+
+    /**
+     * Main method to produce final xml;
+     */
+    public boolean documentExistCheck() {
+        /*
+         * Getting original xsd;
+         */
+        try {
+<span class="pc bpc" id="L45" title="1 of 2 branches missed.">            if (!new File(argsParser.getRes(&quot;SourceXsd&quot;)).exists()) {</span>
+<span class="fc" id="L46">                throw new FileNotFoundException();</span>
+            }
+<span class="fc" id="L48">        } catch (Exception ex) {</span>
+<span class="fc" id="L49">            LOGGER.error(&quot;XSD NOT founded&quot;, ex);</span>
+<span class="fc" id="L50">            return false;</span>
+<span class="nc" id="L51">        }</span>
+        /*
+         *   Getting original xlst;
+         */
+        try {
+<span class="nc" id="L56">            xslt = new StreamSource(new File(argsParser.getRes(&quot;SourceXslt&quot;)));</span>
+<span class="nc bnc" id="L57" title="All 2 branches missed.">            if (!new File(argsParser.getRes(&quot;SourceXslt&quot;)).exists()) {</span>
+<span class="nc" id="L58">                throw new FileNotFoundException();</span>
+            }
+<span class="nc" id="L60">        } catch (Exception ex) {</span>
+<span class="nc" id="L61">            LOGGER.error(&quot;XLST NOT founded&quot;, ex);</span>
+<span class="nc" id="L62">            return false;</span>
+<span class="nc" id="L63">        }</span>
+        /*
+         * Getting original xml and validate him;
+         */
+        try {
+<span class="nc" id="L68">            xml = new StreamSource(new File(argsParser.getRes(&quot;SourceXml&quot;)));</span>
+<span class="nc bnc" id="L69" title="All 2 branches missed.">            if (!new File(argsParser.getRes(&quot;SourceXml&quot;)).exists()) {</span>
+<span class="nc" id="L70">                throw new FileNotFoundException();</span>
+            }
+<span class="nc" id="L72">            LOGGER.info(&quot;XML founded!&quot;);</span>
+<span class="nc" id="L73">        } catch (Exception ex) {</span>
+<span class="nc" id="L74">            LOGGER.error(&quot;XML NOT founded&quot;, ex);</span>
+<span class="nc" id="L75">            return false;</span>
+<span class="nc" id="L76">        }</span>
+<span class="nc bnc" id="L77" title="All 2 branches missed.">        if (!validateXsd(xml)) {</span>
+<span class="nc" id="L78">            LOGGER.error(&quot;XML not valid , program exit.&quot;);</span>
+<span class="nc" id="L79">            return false;</span>
+        }
+<span class="nc" id="L81">        return true;</span>
+    }
+
+    /**
+     * Final transformation to xml;
+     */
+    protected boolean xsltTransformAndValidate() {
+        try {
+<span class="nc" id="L89">            transformer = TransformerFactory.newInstance().newTransformer(xslt);</span>
+<span class="nc" id="L90">            transformer.transform(xml, new StreamResult(new File(argsParser.getRes(&quot;resultXml&quot;))));</span>
+<span class="nc" id="L91">        } catch (Exception ex) {</span>
+<span class="nc" id="L92">            LOGGER.error(&quot;Transformer  exception&quot;, ex);</span>
+<span class="nc" id="L93">            return false;</span>
+<span class="nc" id="L94">        }</span>
+<span class="nc" id="L95">        LOGGER.info(&quot;Transformation Complete.&quot;);</span>
+<span class="nc bnc" id="L96" title="All 2 branches missed.">        if (!validateXsd(new StreamSource(new File(argsParser.getRes(&quot;resultXml&quot;))))) {</span>
+<span class="nc" id="L97">            LOGGER.error(&quot;Final XML not valid&quot;);</span>
+<span class="nc" id="L98">            return false;</span>
+        } else {
+<span class="nc" id="L100">            LOGGER.info(&quot;Transformation over.&quot;);</span>
+        }
+<span class="nc" id="L102">        return true;</span>
+    }
+
+    /**
+     * Validation of xml;
+     *
+     * @param value is xml document which need to validate;
+     */
+    protected boolean validateXsd(Source value) {
+<span class="fc" id="L111">        File schemaFile = new File(argsParser.getRes(&quot;SourceXsd&quot;));</span>
+        try {
+<span class="fc" id="L113">            SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI)</span>
+<span class="fc" id="L114">                    .newSchema(schemaFile)</span>
+<span class="fc" id="L115">                    .newValidator()</span>
+<span class="fc" id="L116">                    .validate(value);</span>
+<span class="fc" id="L117">            LOGGER.info(value.getSystemId() + &quot; XML is Valid&quot;);</span>
+<span class="fc" id="L118">        } catch (Exception e) {</span>
+<span class="fc" id="L119">            LOGGER.error(value.getSystemId() + &quot; XML is NOT valid!&quot;, e);</span>
+<span class="fc" id="L120">            return false;</span>
+<span class="fc" id="L121">        }</span>
+<span class="fc" id="L122">        return true;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.2.201808211720</span></div></body></html>
