@@ -38,10 +38,14 @@ public class ValidatorTest {
         assertTrue(xmlCheck.validateXsd(new StreamSource(new File(parser.getRes("SourceXml")))));
     }
 
-    @DisplayName("Check correct Validation of Source XML")
+    @DisplayName("Check correct Transform of Source XML")
     @ParameterizedTest
-    @ValueSource(strings = {"src/test/resources/xml_example.xml src/test/resources/xsd_valid.xsd xslt_scheme.xslt rr.xml"})
-    void checkTransform() {
-        //TODO ТЕСТ ТРАНСФОРМЕРА КАРЧОЕ
+    @ValueSource(strings = {"src/test/resources/xml_input.xml src/test/resources/xsd_input.xsd src/test/resources/xslt_for_test_validation.xslt xml_outpup.xml"})
+    void checkTransform(String parametrs) {
+        ArgsParser parser = new ArgsParser(parametrs.split(" "));
+        XmlCheck xmlCheck = new XmlCheck(parser);
+        xmlCheck.documentExistCheck();
+        assertTrue(xmlCheck.documentExistCheck());
+        assertTrue(xmlCheck.xsltTransformAndValidate());
     }
 }
